@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+{
+    font-family : Arial;
+	background-color : #CDCDCD;
+}
+
+  .content{
+    width:700px;
+    padding:25px 50px;
+    margin:25px auto;
+    background-color:#fff;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px #888;
+	}
+
+.contentblock
+{
+    width : 750px;
+    margin : 0 auto;
+    padding : 0;
+    border-spacing : 25px 0;
+}
+
+a, a:visited
+{
+    color : blue;
+}
+
+	.imgthumb{
+			width: 60px;
+	}
+
+	.imgmedia{
+			max-height: 90px;
+			max-width: 250px;
+	}
+	.imgmedia2{
+		max-width: 196px;
+	}
+
+a.tooltip {outline:none; }
+a.tooltip strong {line-height:30px;}
+a.tooltip:hover {text-decoration:none;}
+a.tooltip span {
+    z-index:10;display:none; padding:14px 20px;
+    margin-top:60px; margin-left:-160px;
+    width:240px; line-height:16px;
+}
+a.tooltip:hover span{
+    display:inline; position:absolute;
+    border:2px solid #FFF;  color:#EEE;
+    background:#000 url(img/css-tooltip-gradient-bg.png) repeat-x 0 0;
+}
+.callout {z-index:20;position:absolute;border:0;top:-14px;left:30px;}
+
+/*CSS3 extras*/
+.tooltip span
+{
+    border-radius:2px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+
+    -moz-box-shadow: 0px 0px 8px 4px #666;
+    -webkit-box-shadow: 0px 0px 8px 4px #666;
+    box-shadow: 0px 0px 8px 4px #666;
+
+    opacity: 0.9;
+}
+.colormap {
+	display: inline-block;
+	text-align: center;
+	padding: 2px;
+}
+
+.colormap p:first-child{
+	display: inline;
+	font-size: 12pt;
+}
+
+.superimg     {vertical-align: super; height: 20px; }
+
+</style>
+<script>
+    if (document.location.search.indexOf("skipmobile") >= 0) {
+        document.cookie = "skipmobile=1";
+    }else if ((document.location.hostname.match(/\.mobi$/) || screen.width < 699) && document.cookie.indexOf("skipmobile") == -1)
+    {
+        document.location = "m_segnet.html";
+    }
+    </script>
+
+
+
+    <title>WeWorkScene Parsing Oneline Demo</title>
+    <style>
+    img { cursor : pointer; }
+    </style>
+    <script src="{{url_for('static',filename='demo.js')}}"></script>
+    <script>
+    var recognitionResult = null;
+    var imageHeight = 0;
+    var imageWidth  = 0;
+    var maxWidth    = 100;
+    var maxHeight   = 450;
+    var imageScale  = 1;
+    var dispHeight  = 450;
+    var dispWidth   = 50;
+
+    function scaleProperly(){
+        if (imageHeight!=0 && imageWidth!=0){
+            imageScale = Math.min((maxHeight-35)/imageHeight,(maxWidth-35)/imageWidth,1);
+            dispHeight = Math.round(imageHeight * imageScale);
+            dispWidth  = Math.round(imageWidth  * imageScale);
+            $('#imageDiv').height(dispHeight+45);
+            $('#imageDiv').width(dispWidth+35);
+            $('#imageArea').height(dispHeight);
+            $('#imageArea').width(dispWidth);
+
+            var canvas = document.getElementById('imageCanvas');
+            canvas.height=dispHeight+30;
+            canvas.width =dispWidth+30;
+        }
+    }
+    function go1(path) {
+        
+        var recognitionResult 
+        var bChecked = $('#detectObject').is(':checked');
+        $('#form')[0].reset();
+        $('#detectObject').attr('checked', bChecked);
+        submitForm(path)
+    }
+        function submitForm(path){
+         $("#reply").hide();
+      //   var el = document.getElementById('iframereply');
+      //   el.src ="blank.html"; // assign url to src property
+
+        if ($('#url').val()!='http://'){
+            $("#imageArea").css('width', 'auto');
+            $("#imageArea").css('height', 'auto');
+            $('#imageArea').attr('src', $('#url').val());
+        }
+        $('#centerDiv').show();
+        $("#random").val(new Date().getTime());
+        $("#resultArea").hide();
+        $('#resultArea').html('');
+        $("#form").submit(function(e){
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: 'select',
+                data: path,
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(data) {
+                    console.log('success!')
+                }
+            });
+        });
+        $("#statusText").show();
+        clearCanvas();
+    }
+    
+    function go(url) {
+        var bChecked = $('#detectObject').is(':checked');
+        $('#form')[0].reset();
+        $('#detectObject').attr('checked', bChecked);
+        document.getElementById("url").value = url;
+        submitForm();
+    }
+    function clearCanvas(){
+        var canvas = document.getElementById('imageCanvas');
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+
+    function submitForm(){
+        $("#reply").hide();
+      //   var el = document.getElementById('iframereply');
+      //   el.src ="blank.html"; // assign url to src property
+      
+        if ($('#url').val()!='http://'){
+            $("#imageArea").css('width', 'auto');
+            $("#imageArea").css('height', 'auto');
+            $('#imageArea').attr('src', $('#url').val());
+        }
+        $('#centerDiv').show();
+        $("#random").val(new Date().getTime());
+        $("#resultArea").hide();
+        $('#resultArea').html('');
+        $("#form").submit();
+        $("#statusText").show();
+        clearCanvas();
+    }
+    function selectFile(input) {
+
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            $('#centerDiv').show();
+            $('#url').val('http://');
+          
+            reader.onload = function (e) {
+                $("#imageDiv").show();
+                $("#imageArea").css('width', 'auto');
+                $("#imageArea").css('height', 'auto');
+                $("#imageArea").attr("src", e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]);
+            submitForm();
+        }
+    }
+    function cmp(a, b) {
+        return b[1] - a[1];
+    }
+    function printClassAndRatio(classes, ratios) {
+        var out = '';
+        for (var i=0; i<classes.length; i++){
+            out += '<div class="colormap"><p>' + ratios[i] + '</p><br/>' + '<img src="../static/color/' +  classes[i] + '.jpg"></div> ';
+	    //if ((i+1)%3==0)
+		//out += '<br>';
+        }
+        return out;
+    }
+    function printPartAndRatio(classes, ratios) {
+        var out = '';
+        for (var i=0; i<classes.length; i++){
+            out += '<div class="colormap"><p>' + ratios[i] + '</p><br/>' + '<img src="colorcode_part/' +  classes[i] + '.jpg"></div> ';
+        //if ((i+1)%3==0)
+        //out += '<br>';
+        }
+        return out;
+    }
+    var iframeCount = 0;
+    function iframeLoaded(){
+            iframeCount = iframeCount+1;
+            if (iframeCount>1){
+                console.log($("#resIframe").contents().find("body").html());
+                recognitionResult = jQuery.parseJSON($("#resIframe").contents().find("body").html());
+                console.log('2', recognitionResult);
+            if (recognitionResult.object==null){
+                $("#statusText").html("Error! Please refresh and try again.");
+            }else{
+    //                                           $('#resultArea').append('<strong>Predictions</strong>: <ul><li><strong>Type of environment: </strong>'+recognitionResult.prediction.type+'</li><li><strong>Semantic categories: </strong>' +recognitionResult.prediction.category+'</li><li><strong>SUN scene attributes: </strong>'+recognitionResult.prediction.attribute+'</li><li><strong>Informative region for the category *'+recognitionResult.prediction.topcategory +'* is: </strong></li><p align="center"><img src="segmentationresult/'+recognitionResult.prediction.segment+'" align="middle"></p>');
+              $('#resultArea').append('<strong>Segmentation</strong>: <p align="center"><img id="imageResultArea" src="../static/result_data/'+recognitionResult.object.segment+'" align="middle"></p>');
+              $('#resultArea').append('<strong>Objects and their pixel ratios (percentage)</strong>: <p>' + printClassAndRatio(recognitionResult.object.classes,recognitionResult.object.ratios) + '</p>');
+
+              // part predictions
+              if (recognitionResult.part!=null){
+                $('#resultArea').append('<strong>Part prediction:</strong>: <p align="center"><img id="partResultArea" src="result_data_part/'+ recognitionResult.part.segment+'" align="middle"></p>');
+                $('#resultArea').append('<strong>Parts and their pixel ratios</strong>: <p>' + printPartAndRatio(recognitionResult.part.classes, recognitionResult.part.ratios) + '</p>');
+              }
+
+              $('#imageResultArea').height(dispHeight);
+              $('#imageResultArea').width(dispWidth);
+
+              $("#statusText").hide();
+              $("#resultArea").show();
+
+            }
+        }
+    }
+
+
+    $(document).ready(function() {
+        maxWidth = $('#centerDiv').width();
+        $(window).resize(function() {
+            maxWidth = $('#centerDiv').width();
+            scaleProperly();
+        });
+        $('#imageArea').load(function() {
+            imageHeight = $('#imageArea').height();
+            imageWidth  = $('#imageArea').width();
+            scaleProperly();
+        });
+        $("#demoblock").height($("#apiblock").height());
+    });
+
+    function runBtn(){
+        var url = document.getElementById("url").value;
+        $('#form')[0].reset();
+        document.getElementById("url").value = url;
+        submitForm();
+    }
+
+  function popup(mylink, windowname)
+  {
+  if (! window.focus)return true;
+  var href;
+  if (typeof(mylink) == 'string')
+     href=mylink;
+  else
+     href=mylink.href;
+  window.open(href, windowname, 'width=800,height=300,scrollbars=yes,menubar=no');
+  return false;
+  }
+    </script>
+  </head>
+</div>
+
+<div class="content">
+<div style="width: 700px; " id="demoblock">
+    <form action="http://0.0.0.0:8080/imgseg" method="post" enctype="multipart/form-data" target="resIframe" id="form">
+        <div style=" width: 0px; height: 0px; overflow: hidden;" >
+            <input type="hidden" name="random" id="random" value="">
+            <iframe src="" name="resIframe" id="resIframe" onload="iframeLoaded();" ></iframe>
+        </div>
+        <h2 style="margin-top:0px">WeWork Scene Parsing Online Demo</h2>
+          This demo parses a given image into semantic regions.<br>
+          <p>Choose or select an image: </p>
+
+        <table style="width:88%;">
+        <tr>
+          <td width=100>
+            <strong>Upload :</strong>
+          </td>
+          <td>
+            <input type="file" name="data" id="fileinput" onchange="selectFile(this);">
+          </td>
+        </tr>
+         <tr>
+              <td></td>
+              <td>&nbsp;&nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;</td>
+        </tr>
+        <tr>
+          <td>
+            <input type="hidden" id="url" name="url" style="width:200px;" value="http://">
+          </td>
+          <!--td>
+            <input type="button" value="Run" onClick="runBtn();">
+          </td-->
+        </tr>
+
+        <tr>
+          <td><strong>Click One:</strong></td>
+
+          <td style="width: 500px;" colspan=4>
+              <img src="../static/teaser/-0.jpg" class="imgthumb" onclick="go(this.src);">
+              <img src="../static/teaser/-1.jpg" class="imgthumb" onclick="go(this.src);">
+              <img src="../static/teaser/-2.jpg" class="imgthumb" onclick="go(this.src);">
+          </td>
+        </tr>
+      </table>
+    </form>
+    </div>
+
+    <p>The project is supported by REDTech data science team. </p>
+
+<!--<div class="content">
+				<p><strong style="color:red">Note: due to extremely heavy traffic, you might experience slight delays in getting your popularity scores. Our systems are hard at work to compute your popularity, and we thank you for your patience! </p><p>We sincerely apologize for any inconvenience.</strong></p>
+</div>-->
+    </div>
+    <div id="centerDiv" class="content" style="display:none">
+        <div id="imageDiv" style="position: relative; top: 0px; width:100; height: 450; overflow: auto; margin-left: auto; margin-right: auto; " oncontextmenu="javascript:return false;" >
+            <img id="imageArea" style="position: absolute; left: 15px; top: 15px; vertical-align: bottom; z-index: 1; visibility: visible" />
+        </div>
+
+        <div style="text-align: left; ">
+        <h4 id="statusText" style="display:none;">Computing... <img src="../static/spinner.gif" /> (It usually takes about 40s to generate prediction on cpu hardware, please be patient).</h4>
+        <div id="resultArea" style="display:inline;">
+        </div>
+        </div>
+    </div>
+
+</body>
+</html>
