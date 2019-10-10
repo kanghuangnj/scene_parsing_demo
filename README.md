@@ -1,2 +1,6 @@
-# scene_parsing_demo
-# scene_parsing_demo
+
+Command:
+```shell
+cd scene_parsing_demo
+sh demo.sh
+```
