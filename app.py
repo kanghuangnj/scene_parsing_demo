@@ -19,18 +19,18 @@ from scene_parsing.lib.nn import user_scattered_collate, async_copy_to
 from scene_parsing.lib.utils import as_numpy
 from PIL import Image
 from tqdm import tqdm
-from config import cfg
+from scene_parsing.config import cfg
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from pprint import pprint
 
 IP = '0.0.0.0:8080'
-
-colors = loadmat('data/color150.mat')['colors']
+ROOT='scene_parsing'
+colors = loadmat(os.path.join(ROOT, 'data/color150.mat'))['colors']
 #print (colors)
 #print (mcolors.BASE_COLORS)
 names = {}
-with open('data/object150_info.csv') as f:
+with open(os.path.join(ROOT, 'data/object150_info.csv')) as f:
     reader = csv.reader(f)
     next(reader)
     for row in reader:

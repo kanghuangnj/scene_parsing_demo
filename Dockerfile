@@ -27,3 +27,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
+RUN git clone git@github.com:kanghuangnj/scene_parsing_demo.git && cd scene_parsing_demo
+CMD demo.sh
